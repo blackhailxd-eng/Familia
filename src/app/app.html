@@ -1,0 +1,137 @@
+<main class="page-shell">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Registro familiar</p>
+      <h1>APIFamilia</h1>
+      <p class="subtitle">
+        Inicia sesion para consultar los integrantes.
+      </p>
+    </div>
+
+    <div class="api-status" aria-label="Estado de conexion">
+      <span class="status-dot" [class.status-dot--ok]="!apiError()"></span>
+      <span>{{ apiStatus() }}</span>
+    </div>
+  </section>
+
+  <section class="workspace">
+    <section class="form-panel form-panel--readonly" aria-labelledby="modo-captura">
+      <div class="section-heading">
+        <span class="section-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9Zm4 10h-3v3h-2v-3H8v-2h3V8h2v3h3Z" />
+          </svg>
+        </span>
+        <div>
+          <h2 id="modo-captura">Captura deshabilitada</h2>
+          <p>{{ modoCaptura }} desde la web</p>
+        </div>
+      </div>
+
+      @if (usuario(); as usuarioActual) {
+        <div class="user-summary">
+          <div class="user-chip">
+            @if (usuarioActual.fotoUrl) {
+              <img
+                class="user-avatar"
+                [src]="usuarioActual.fotoUrl"
+                [alt]="'Foto de ' + usuarioActual.nombre"
+              />
+            } @else {
+              <div class="user-avatar user-avatar--fallback" aria-hidden="true">
+                {{ usuarioActual.nombre.charAt(0) }}
+              </div>
+            }
+
+            <div>
+              <p class="user-name">{{ usuarioActual.nombre }}</p>
+              <p class="user-email">{{ usuarioActual.email }}</p>
+            </div>
+          </div>
+
+          <button class="logout-button" type="button" (click)="cerrarSesion()">
+            Cerrar sesion
+          </button>
+        </div>
+
+        <p class="readonly-copy">
+          Tu sesion esta activa.
+        </p>
+      } @else {
+        <p class="readonly-copy">Inicia sesion con Google para continuar.</p>
+
+        <div class="google-login-block">
+          <div class="google-button-host" #googleButtonHost></div>
+          @if (authCargando() || autenticando()) {
+            <p class="helper-text">
+              {{ autenticando() ? 'Validando sesion con Google...' : 'Recuperando sesion...' }}
+            </p>
+          }
+        </div>
+      }
+
+      @if (apiError()) {
+        <p class="message message-error">{{ apiError() }}</p>
+      }
+
+      @if (authError()) {
+        <p class="message message-error">{{ authError() }}</p>
+      }
+    </section>
+
+    <section class="directory-panel" aria-labelledby="tabla-integrantes">
+      <div class="section-heading section-heading--table">
+        <span class="section-icon section-icon--accent" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 5h16v3H4Zm0 5h16v3H4Zm0 5h10v3H4Z" />
+          </svg>
+        </span>
+        <div>
+          <h2 id="tabla-integrantes">Integrantes</h2>
+          <p>{{ totalIntegrantes() }} registro(s)</p>
+        </div>
+      </div>
+
+      <div class="table-frame">
+        @if (autenticado()) {
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Edad</th>
+                <th>Parentesco</th>
+                <th>Sexo</th>
+                <th>Nacionalidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (cargando()) {
+                <tr>
+                  <td colspan="5" class="empty-state">Cargando integrantes...</td>
+                </tr>
+              } @else {
+                @for (integrante of integrantes(); track integrante.id ?? $index) {
+                  <tr>
+                    <td>{{ integrante.nombre }}</td>
+                    <td>{{ integrante.edad }}</td>
+                    <td>{{ integrante.parentesco }}</td>
+                    <td>{{ integrante.sexo }}</td>
+                    <td>{{ integrante.nacionalidad }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="empty-state">Sin registros todavia.</td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="locked-state">
+            <p>Inicia sesion para ver la tabla.</p>
+          </div>
+        }
+      </div>
+    </section>
+  </section>
+</main>
